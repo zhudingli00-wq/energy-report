@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>佘山高尔夫一号岛 — 能耗经济测算</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e27;--bg2:#111638;--bg3:#161b45;--border:#252d6a;--text:#c8cfe8;--text2:#8892c0;--white:#eef1ff;--accent:#6366f1;--cyan:#22d3ee;--orange:#f97316;--green:#22c55e;--pink:#ec4899;--yellow:#eab308;--red:#ef4444;--purple:#a855f7;--teal:#14b8a6}
+body{font-family:'Noto Sans SC','Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.wrap{max-width:1680px;margin:0 auto;padding:20px 28px 60px}
+.hdr{display:flex;align-items:center;padding:16px 0 8px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.badge{background:var(--accent);color:#fff;font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:1.5px;text-transform:uppercase;margin-right:12px}
+.hdr h1{font-size:22px;font-weight:700;color:var(--white)}
+.hdr p{font-size:12px;color:var(--text2);margin-top:2px}
+.ctrls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.cg{display:flex;background:var(--bg2);border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.cg button{background:transparent;border:none;color:var(--text2);padding:9px 20px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit}
+.cg button:hover{color:var(--white);background:var(--bg3)}
+.cg button.on{background:var(--accent);color:#fff}
+.cl{font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500;letter-spacing:.5px}
+.cw{display:flex;flex-direction:column}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
+.kpi:hover{transform:translateY(-2px);border-color:var(--accent)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.kpi:nth-child(1)::before{background:linear-gradient(90deg,var(--cyan),var(--accent))}
+.kpi:nth-child(2)::before{background:linear-gradient(90deg,var(--orange),var(--yellow))}
+.kpi:nth-child(3)::before{background:linear-gradient(90deg,var(--green),var(--teal))}
+.kpi:nth-child(4)::before{background:linear-gradient(90deg,var(--pink),var(--purple))}
+.kpi:nth-child(5)::before{background:linear-gradient(90deg,var(--red),var(--orange))}
+.kpi-l{font-size:11px;color:var(--text2);font-weight:500;margin-bottom:5px}
+.kpi-v{font-size:24px;font-weight:700;color:var(--white);font-family:'Inter',sans-serif}
+.kpi-u{font-size:12px;color:var(--text2);font-weight:400;margin-left:3px}
+.kpi-s{font-size:11px;color:var(--text2);margin-top:3px}
+.kpi-s .up{color:var(--green)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.pnl{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;min-height:400px}
+.pnl.full{grid-column:1/-1}
+.pnl-t{font-size:15px;font-weight:600;color:var(--white);margin-bottom:4px}
+.pnl-s{font-size:11px;color:var(--text2);margin-bottom:14px}
+.ch{width:100%;height:400px}
+.ch.tall{height:480px}
+.tw{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;overflow-x:auto}
+.tw h3{font-size:15px;font-weight:600;color:var(--white);margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--bg3);color:var(--text2);font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:8px 12px;text-align:center;border-bottom:1px solid rgba(37,45,106,.5);color:var(--text);transition:background .15s}
+tr:hover td{background:rgba(99,102,241,.08)}
+td:first-child,th:first-child{text-align:left;font-weight:600;color:var(--white)}
+.hl{color:var(--cyan);font-weight:600}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}.kpi-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.kpi-row{grid-template-columns:1fr}.ctrls{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr"><div><div style="display:flex;align-items:center"><span class="badge">SPEC DETAILS</span><h1>佘山高尔夫一号岛项目 · 能耗经济测算</h1></div>
+  <p>数据来源：经济测算表单 | 夏季90天 COP=3 · 冬季60天 COP=4 | 全交互可视化</p></div></div>
+  <div class="ctrls">
+    <div class="cw"><div class="cl">季节</div><div class="cg" id="sBtns">
+      <button class="on" data-v="summer">夏季 (90天)</button>
+      <button data-v="winter">冬季 (60天)</button>
+      <button data-v="annual">全年汇总</button>
+    </div></div>
+    <div class="cw"><div class="cl">指标</div><div class="cg" id="mBtns">
+      <button class="on" data-v="elec">用电量</button>
+      <button data-v="energy">总能耗</button>
+    </div></div>
+  </div>
+  <div class="kpi-row" id="kpi"></div>
+  <div class="grid"><div class="pnl full"><div class="pnl-t" id="t1"></div><div class="pnl-s" id="s1"></div><div id="c1" class="ch tall"></div></div></div>
+  <div class="grid">
+    <div class="pnl"><div class="pnl-t">楼层占比</div><div class="pnl-s" id="s2">选中方案的各楼层分布</div><div id="c2" class="ch"></div></div>
+    <div class="pnl"><div class="pnl-t">方案节能对比</div><div class="pnl-s">全年用电量 (万度) + 节能率</div><div id="c3" class="ch"></div></div>
+  </div>
+  <div class="grid"><div class="pnl full"><div class="pnl-t">夏季 vs 冬季 用电量构成 (万度)</div><div class="pnl-s">各楼层夏冬季用电量堆叠对比 — 三方案并排</div><div id="c4" class="ch tall"></div></div></div>
+  <div class="tw"><h3 id="tblT">数据明细</h3><table id="tbl"></table></div>
+</div>
+<script>
+// ========== REAL DATA from 表单制作.xlsx ==========
+const FL=['1F','2F','3F','B1','B2'];
+const S={
+  summer:{
+    energy: {s1:[57663360,54447120,39724560,14612400,15202080], s2:[15266880,11028960,8002800,4065120,2995920], s3:[11573280,8601120,5285520,2561760,1779840]},
+    elec:   {s1:[19221120,18149040,13241520,4870800,5067360], s2:[5088960,3676320,2667600,1355040,998640], s3:[3857760,2867040,1761840,853920,593280]}
+  },
+  winter:{
+    energy: {s1:[33320404.8,12508718.4,32018004,12276986.4,15463476], s2:[6203520,3723840,5503680,2590560,2606400], s3:[1658880,603360,2597760,1440000,1447200]},
+    elec:   {s1:[8330101.2,3127179.6,8004501,3069246.6,3865869], s2:[1550880,930960,1375920,647640,651600], s3:[414720,150840,649440,360000,361800]}
+  }
+};
+// Annual totals in 万度 (万kWh)
+const ANN_ELEC={s1:8.6947, s2:1.8944, s3:1.1871};
+</script>
+<script>
+// ========== ENGINE ==========
+const SC=['方案一','方案二','方案三'],SK=['s1','s2','s3'];
+const CC={s1:'#6366f1',s2:'#f97316',s3:'#22c55e',pk:'#ec4899'};
+let season='summer',metric='elec';
+
+function sum(arr){return arr.reduce((a,b)=>a+b,0);}
+function fmt(v){if(Math.abs(v)>=1e9)return(v/1e9).toFixed(2)+'G';if(Math.abs(v)>=1e6)return(v/1e6).toFixed(1)+'M';if(Math.abs(v)>=1e3)return(v/1e3).toFixed(1)+'K';return Math.round(v).toString();}
+function fmtF(v){return Math.round(v).toLocaleString('zh-CN');}
+function dax(){return{axisLine:{lineStyle:{color:'#252d6a'}},axisTick:{lineStyle:{color:'#252d6a'}},axisLabel:{color:'#8892c0',fontSize:11,fontFamily:'Noto Sans SC'},splitLine:{lineStyle:{color:'rgba(37,45,106,.4)',type:'dashed'}}};}
+function tt(){return{backgroundColor:'#161b45',borderColor:'#252d6a',textStyle:{color:'#eef1ff',fontSize:12}};}
+function isAnn(){return season==='annual';}
+function label(){return{summer:'夏季',winter:'冬季',annual:'全年'}[season];}
+function mLabel(){return{elec:'用电量 (W)',energy:'总能耗 (Wh)'}[metric];}
+
+function getArr(sk){
+  if(isAnn()){
+    if(metric==='elec') return FL.map((_,i)=>S.summer.elec[sk][i]+S.winter.elec[sk][i]);
+    return FL.map((_,i)=>S.summer.energy[sk][i]+S.winter.energy[sk][i]);
+  }
+  return S[season][metric][sk];
+}
+function getTotal(sk){return sum(getArr(sk));}
+
+const ch1=echarts.init(document.getElementById('c1'));
+const ch2=echarts.init(document.getElementById('c2'));
+const ch3=echarts.init(document.getElementById('c3'));
+const ch4=echarts.init(document.getElementById('c4'));
+window.addEventListener('resize',()=>{ch1.resize();ch2.resize();ch3.resize();ch4.resize();});
+
+function updateAll(){updateKPI();updateC1();updateC2();updateC3();updateC4();updateTbl();}
+
+function updateKPI(){
+  let b=document.getElementById('kpi');
+  let v1=getTotal('s1'),v2=getTotal('s2'),v3=getTotal('s3');
+  let sv2=v1?((1-v2/v1)*100).toFixed(1):'0';
+  let sv3=v1?((1-v3/v1)*100).toFixed(1):'0';
+  let isElec=metric==='elec';
+  let unit=isElec?'万度':'Wh';
+  let d1=isElec?(v1/1e7).toFixed(2):fmt(v1);
+  let d2=isElec?(v2/1e7).toFixed(2):fmt(v2);
+  let d3=isElec?(v3/1e7).toFixed(2):fmt(v3);
+  let ds=isElec?((v1-v3)/1e7).toFixed(2):fmt(v1-v3);
+  b.innerHTML=`
+    <div class="kpi"><div class="kpi-l">方案一 · ${label()}</div><div class="kpi-v">${d1}<span class="kpi-u">${unit}</span></div><div class="kpi-s">不做维护结构 K=3</div></div>
+    <div class="kpi"><div class="kpi-l">方案二 · ${label()}</div><div class="kpi-v">${d2}<span class="kpi-u">${unit}</span></div><div class="kpi-s">节能 <span class="up">&darr; ${sv2}%</span> | K=0.45</div></div>
+    <div class="kpi"><div class="kpi-l">方案三 · ${label()}</div><div class="kpi-v">${d3}<span class="kpi-u">${unit}</span></div><div class="kpi-s">节能 <span class="up">&darr; ${sv3}%</span> | K=0.25</div></div>
+    <div class="kpi"><div class="kpi-l">最大节省</div><div class="kpi-v">${ds}<span class="kpi-u">${unit}</span></div><div class="kpi-s">方案三 vs 方案一</div></div>`;
+}
+
+function fmtV(v){return metric==='elec'?(v/1e7).toFixed(2)+' 万度':fmtF(Math.round(v))+' Wh';}
+function fmtBar(v){return metric==='elec'?(v/1e7).toFixed(2):fmt(v);}
+function yFmt(v){return metric==='elec'?(v/1e7).toFixed(1):fmt(v);}
+
+function updateC1(){
+  document.getElementById('t1').textContent=label()+' — '+(metric==='elec'?'用电量 (万度)':mLabel())+' — 三方案按楼层对比';
+  document.getElementById('s1').textContent='点击图例切换显示 | 悬浮查看详情';
+  let series=SK.map((sk,si)=>({
+    name:SC[si],type:'bar',barGap:'12%',barWidth:'22%',
+    itemStyle:{color:CC[sk],borderRadius:[4,4,0,0]},
+    emphasis:{itemStyle:{shadowBlur:12,shadowColor:'rgba(99,102,241,.3)'}},
+    label:{show:true,position:'top',color:'#8892c0',fontSize:10,formatter:p=>fmtBar(p.value)},
+    data:getArr(sk)
+  }));
+  ch1.setOption({
+    tooltip:{trigger:'axis',...tt(),formatter(p){let s='<b>'+p[0].axisValue+'</b><br>';p.forEach(i=>{s+='<span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:'+i.color+';margin-right:6px"></span>'+i.seriesName+': <b>'+fmtV(i.value)+'</b><br>';});return s;}},
+    legend:{top:6,right:20,textStyle:{color:'#8892c0',fontSize:11},itemWidth:14,itemHeight:10,inactiveColor:'#333860'},
+    grid:{left:80,right:30,top:55,bottom:35},
+    xAxis:{type:'category',data:FL,...dax()},
+    yAxis:{type:'value',...dax(),axisLabel:{formatter:v=>yFmt(v)}},
+    series,animationDuration:500
+  },true);
+}
+
+function updateC2(){
+  document.getElementById('s2').textContent='方案一 — '+label()+' — '+(metric==='elec'?'用电量 (万度)':mLabel());
+  let arr=getArr('s1');
+  ch2.setOption({
+    tooltip:{trigger:'item',...tt(),formatter:p=>'<b>'+p.name+'</b><br>'+fmtV(p.value)+'<br>占比 '+p.percent+'%'},
+    series:[{type:'pie',radius:['40%','72%'],center:['50%','52%'],
+      label:{color:'#c8cfe8',fontSize:12,formatter:'{b}\n{d}%'},labelLine:{lineStyle:{color:'#444a80'}},
+      emphasis:{scaleSize:8,itemStyle:{shadowBlur:20}},
+      data:FL.map((f,i)=>({name:f,value:Math.round(arr[i]),itemStyle:{color:['#6366f1','#f97316','#22c55e','#ec4899','#a855f7'][i]}})),
+      animationType:'scale',animationDuration:700}]
+  },true);
+}
+
+function updateC3(){
+  let elecS=SK.map(sk=>sum(S.summer.elec[sk]));
+  let elecW=SK.map(sk=>sum(S.winter.elec[sk]));
+  let elecA=SK.map((_,i)=>(elecS[i]+elecW[i])/1e7); // 万度 = W / 10,000,000
+  let sv=[0,((1-elecA[1]/elecA[0])*100).toFixed(1),((1-elecA[2]/elecA[0])*100).toFixed(1)];
+  ch3.setOption({
+    tooltip:{trigger:'axis',...tt(),formatter(p){let s='';p.forEach(i=>{if(i.componentSubType==='bar')s+='<b>'+i.name+'</b>: '+i.value.toFixed(2)+' 万度<br>';else s+=i.seriesName+': '+i.value+'%<br>';});return s;}},
+    grid:{left:70,right:50,top:50,bottom:60},
+    xAxis:{type:'category',data:SC,...dax()},
+    yAxis:[{type:'value',name:'万度',...dax(),axisLabel:{formatter:v=>v.toFixed(1)}},{type:'value',max:100,...dax(),axisLabel:{formatter:'{value}%'},splitLine:{show:false}}],
+    series:[
+      {name:'全年用电量',type:'bar',barWidth:'35%',
+        data:[{value:+elecA[0].toFixed(2),itemStyle:{color:CC.s1,borderRadius:[4,4,0,0]}},{value:+elecA[1].toFixed(2),itemStyle:{color:CC.s2,borderRadius:[4,4,0,0]}},{value:+elecA[2].toFixed(2),itemStyle:{color:CC.s3,borderRadius:[4,4,0,0]}}],
+        label:{show:true,position:'top',color:'#8892c0',fontSize:10,formatter:p=>p.value.toFixed(2)+' 万度'}},
+      {name:'节能率',type:'line',yAxisIndex:1,symbol:'circle',symbolSize:10,
+        lineStyle:{color:CC.pk,width:2},itemStyle:{color:CC.pk,borderWidth:2,borderColor:'#161b45'},
+        data:[0,+sv[1],+sv[2]],
+        label:{show:true,position:'top',color:CC.pk,fontSize:12,fontWeight:'bold',formatter:p=>p.value===0?'基准':p.value+'%'}}
+    ],animationDuration:600
+  },true);
+}
+
+function updateC4(){
+  // Grouped: 3 schemes side by side, each stacked summer+winter
+  let cats=FL;
+  let series=[];
+  SK.forEach((sk,si)=>{
+    series.push({name:SC[si]+'-夏季',type:'bar',stack:sk,barWidth:'18%',barGap:'20%',
+      itemStyle:{color:CC[sk],borderRadius:[0,0,0,0]},
+      data:S.summer.elec[sk].map(v=>Math.round(v))});
+    series.push({name:SC[si]+'-冬季',type:'bar',stack:sk,barWidth:'18%',
+      itemStyle:{color:CC[sk],opacity:0.5,borderRadius:[4,4,0,0]},
+      data:S.winter.elec[sk].map(v=>Math.round(v))});
+  });
+  ch4.setOption({
+    tooltip:{trigger:'axis',...tt(),formatter(p){
+      let s='<b>'+p[0].axisValue+'</b><br>';
+      p.forEach(i=>{if(i.value)s+='<span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:'+i.color+';margin-right:6px;opacity:'+(i.seriesName.includes('冬季')?'.5':'1')+'"></span>'+i.seriesName+': <b>'+(i.value/1e7).toFixed(2)+'</b> 万度<br>';});
+      return s;}},
+    legend:{type:'scroll',top:6,right:20,textStyle:{color:'#8892c0',fontSize:10},itemWidth:12,itemHeight:8,inactiveColor:'#333860'},
+    grid:{left:80,right:20,top:55,bottom:35},
+    xAxis:{type:'category',data:cats,...dax()},
+    yAxis:{type:'value',...dax(),axisLabel:{formatter:v=>(v/1e7).toFixed(1)}},
+    series,animationDuration:500
+  },true);
+}
+
+function updateTbl(){
+  let lbl=label(), ml=metric==='elec'?'用电量 (万度)':mLabel();
+  document.getElementById('tblT').textContent='数据明细 — '+lbl+' — '+ml;
+  let h='<thead><tr><th>楼层</th>';
+  SC.forEach((s,i)=>h+='<th>'+s+'</th>');
+  h+='</tr></thead><tbody>';
+  FL.forEach((f,fi)=>{
+    h+='<tr><td>'+f+'</td>';
+    SK.forEach(sk=>{
+      let v=getArr(sk)[fi];
+      h+='<td class="hl">'+(metric==='elec'?(v/1e7).toFixed(2)+' 万度':fmtF(Math.round(v)))+'</td>';
+    });
+    h+='</tr>';
+  });
+  h+='<tr style="background:rgba(99,102,241,.12)"><td><b>合计</b></td>';
+  SK.forEach(sk=>{let t=getTotal(sk);h+='<td class="hl"><b>'+(metric==='elec'?(t/1e7).toFixed(2)+' 万度':fmtF(Math.round(t)))+'</b></td>';});
+  h+='</tr>';
+  // Energy saving row
+  let v1=getTotal('s1'),v2=getTotal('s2'),v3=getTotal('s3');
+  h+='<tr style="background:rgba(34,197,94,.08)"><td>节能率</td><td>基准</td><td style="color:var(--green);font-weight:700">&darr; '+(v1?((1-v2/v1)*100).toFixed(1):'0')+'%</td><td style="color:var(--green);font-weight:700">&darr; '+(v1?((1-v3/v1)*100).toFixed(1):'0')+'%</td></tr>';
+  h+='</tbody>';
+  document.getElementById('tbl').innerHTML=h;
+}
+
+// Controls
+document.querySelectorAll('.cg').forEach(grp=>{
+  grp.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      grp.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      if(grp.id==='sBtns')season=btn.dataset.v;
+      if(grp.id==='mBtns')metric=btn.dataset.v;
+      updateAll();
+    });
+  });
+});
+
+updateAll();
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
